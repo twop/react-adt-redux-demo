@@ -10,8 +10,6 @@ import { fetchDescription } from './redux';
 // import { connect, MapStateToProps, DispatchProp } from 'react-redux';
 // import { AnyAction } from 'redux';
 
-type ItemState = typeof ItemState.T;
-
 type State = {
   index: number;
 };
