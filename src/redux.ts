@@ -2,6 +2,7 @@ import { describeAction, createReducer } from 'ts-describe-action';
 import { createStore, applyMiddleware, AnyAction } from 'redux';
 import { composeWithDevTools } from 'redux-devtools-extension';
 import thunk, { ThunkAction } from 'redux-thunk';
+import { Middleware } from 'redux';
 
 import { ItemState, Desc, AppState } from './types';
 import { api, Res } from './api';
@@ -50,11 +51,46 @@ const reducer = createReducer(
   {} as AppState
 );
 
+let allActions: AnyAction[] = [
+  { type: 'start fetching', payload: 0 },
+  {
+    type: 'finished fetching',
+    payload: { index: 0, desc: { text: 'Fetched ^_^ (0)' } }
+  },
+  { type: 'start fetching', payload: 1 },
+  {
+    type: 'fetching err',
+    payload: { index: 1, err: 'Ha! Ha! Failed 0_o (1)' }
+  },
+  { type: 'start fetching', payload: 2 },
+  {
+    type: 'finished fetching',
+    payload: { index: 2, desc: { text: 'Fetched ^_^ (2)' } }
+  },
+  { type: 'start fetching', payload: 3 },
+  { type: 'fetching err', payload: { index: 3, err: 'Ha! Ha! Failed 0_o (3)' } }
+];
+
+const logger: Middleware<{}, AppState> = s => next => action => {
+  // tslint:disable-next-line:no-console
+  console.log('dispatching', action);
+  // allActions.push(action);
+  // tslint:disable-next-line:no-console
+  // console.log('Ser', JSON.stringify(allActions));
+  let result = next(action);
+  // tslint:disable-next-line:no-console
+  console.log('next state', s.getState());
+  return result;
+};
+
+const initState: AppState | undefined = allActions.reduce(reducer, {});
+
 const composeEnhancers = composeWithDevTools({
   // Specify name here, actionsBlacklist, actionsCreators and other options if needed
 });
 export const store = createStore(
   reducer,
-  composeEnhancers(applyMiddleware(thunk))
+  initState || {},
+  composeEnhancers(applyMiddleware(thunk, logger))
 );
 // export const store = createStore(reducer, applyMiddleware(thunk));
